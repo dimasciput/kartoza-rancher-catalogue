@@ -36,3 +36,9 @@
     required: true
     default: "docker"
     type: "string"
+  - variable: BACKUPS_PATH
+    label: "DB Backups Path."
+    required: true
+    default: "/backups"
+    type: "string"
+

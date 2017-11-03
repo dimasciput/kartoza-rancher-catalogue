@@ -16,15 +16,6 @@ services:
       io.rancher.container.start_once: 'true'
       io.rancher.container.hostname_override: container_name
       io.rancher.container.pull_image: always
-  geoserver-balancer:
-    image: rancher/lb-service-haproxy:v0.7.9
-    ports:
-    - ${GEOSERVER_PORT}:${GEOSERVER_PORT}/tcp
-    expose:
-    - 8080:8080/tcp
-    labels:
-      io.rancher.container.agent.role: environmentAdmin
-      io.rancher.container.create_agent: 'true'
   django:
     image: kartoza/haitidata_django:latest
     environment:
@@ -46,7 +37,7 @@ services:
     tty: true
     links:
     - postgres:postgres
-    - geoserver-balancer:geoserver-balancer
+    - geoserver:geoserver
     command:
     - /entry-point.sh
     labels:
@@ -62,7 +53,7 @@ services:
     tty: true
     links:
     - django:django
-    - geoserver-balancer:geoserver
+    - geoserver:geoserver
     ports:
     - ${SITE_PORT}:8080/tcp
     labels:
@@ -73,11 +64,11 @@ services:
     image: dimasciput/haitidata_db
     environment:
       PASS: ${POSTGRES_PASS}
-      POSTGRES_PASS: ${POSTGRES_USER}
-      POSTGRES_USER: ${POSTGRES_PASS}
+      POSTGRES_PASS: ${POSTGRES_PASS}
+      POSTGRES_USER: ${POSTGRES_USER}
       USERNAME: ${POSTGRES_USER}
     volumes:
-    - /backups:/backups
+    - ${BACKUPS_PATH}:/backups
   dbbackups:
     image: kartoza/pg-backup:9.4
     environment:
@@ -89,7 +80,7 @@ services:
       PGUSER: ${POSTGRES_PASS}
     stdin_open: true
     volumes:
-    - /backups:/backups
+    - ${BACKUPS_PATH}:/backups
     tty: true
     links:
     - postgres:db
