@@ -8,8 +8,7 @@ services:
       GEOSERVER_BASE_URL: ${SITE_URL}:${GEOSERVER_PORT}/geoserver/
     stdin_open: true
     volumes:
-    - /home/ubuntu/cnigs-data:/home/ubuntu/cnigs-data
-    - /home/ubuntu/haitidata-dev-data/data:/geoserver_data/data
+    - ${GEOSERVER_DATA}:/geoserver_data/data
     tty: true
     links:
     - postgres:postgres
@@ -31,9 +30,9 @@ services:
     environment:
       DATABASE_HOST: postgres
       DATABASE_NAME: gis
-      DATABASE_PASSWORD: docker
+      DATABASE_PASSWORD: ${POSTGRES_PASS}
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
-      DATABASE_USERNAME: docker
+      DATABASE_USERNAME: ${POSTGRES_USER}
       DJANGO_SETTINGS_MODULE: core.settings.prod_docker
       GEOSERVER_BASE_URL: ${SITE_URL}:${GEOSERVER_PORT}/geoserver/
       GEOSERVER_PUBLIC_LOCATION: ${SITE_URL}:${SITE_PORT}/api/geoserver/
@@ -60,8 +59,6 @@ services:
     volumes:
     - django-static-data:/home/web/static:ro
     - django-media-data:/home/web/media:ro
-    - django-media-data:/home/web/uploaded:ro
-    - /home/ubuntu/haitidata/deployment/production/docker/nginx/sites-enabled:/etc/nginx/sites-enabled:ro
     tty: true
     links:
     - django:django
@@ -75,12 +72,11 @@ services:
   postgres:
     image: dimasciput/haitidata_db
     environment:
-      PASS: docker
-      POSTGRES_PASS: docker
-      POSTGRES_USER: docker
-      USERNAME: docker
+      PASS: ${POSTGRES_PASS}
+      POSTGRES_PASS: ${POSTGRES_USER}
+      POSTGRES_USER: ${POSTGRES_PASS}
+      USERNAME: ${POSTGRES_USER}
     volumes:
-    - /home/ubuntu/database-backups/backups:/dev_backups
     - /backups:/backups
   dbbackups:
     image: kartoza/pg-backup:9.4
@@ -88,9 +84,9 @@ services:
       DUMPPREFIX: HAITIDATA
       PGDATABASE: gis
       PGHOST: db
-      PGPASSWORD: docker
+      PGPASSWORD: ${POSTGRES_USER}
       PGPORT: '5432'
-      PGUSER: docker
+      PGUSER: ${POSTGRES_PASS}
     stdin_open: true
     volumes:
     - /backups:/backups

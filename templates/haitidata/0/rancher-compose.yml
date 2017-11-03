@@ -20,3 +20,19 @@
     required: true
     description: "Port for geoserver site."
     type: "int"
+  - variable: GEOSERVER_DATA
+    label: "Geoserver Data Path"
+    required: true
+    description: "Path for Geoserver Data"
+    default: "/geoserver_data"
+    type: "string"
+  - variable: POSTGRES_PASS
+    label: "PostgreSQL superuser password to create."
+    required: true
+    default: "docker"
+    type: "string"
+  - variable: POSTGRES_USER
+    label: "PostgrsSQL superuser account to create."
+    required: true
+    default: "docker"
+    type: "string"
