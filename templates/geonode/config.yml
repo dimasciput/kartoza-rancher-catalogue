@@ -1,7 +1,0 @@
-name: Geonode with QGIS Backend
-description: Geonode with QGIS backend and backups via resilio sync
-version: 1
-category: GIS
-maintainer: Kartoza (Pty) Ltd. - Tim Sutton, tim@kartoza.com
-license: GPL v3
-projectURL: https://github.com/kartoza/docker-geosafe

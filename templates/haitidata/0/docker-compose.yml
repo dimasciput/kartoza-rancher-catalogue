@@ -1,0 +1,101 @@
+version: '2'
+services:
+  geoserver:
+    image: dimasciput/haitidata_geoserver:clustering
+    environment:
+      DJANGO_URL: ${DJANGO_URL}
+      SITEURL: ${SITE_URL}
+      GEOSERVER_BASE_URL: ${GEOSERVER_BASE_URL}/geoserver/
+    stdin_open: true
+    volumes:
+    - /home/ubuntu/cnigs-data:/home/ubuntu/cnigs-data
+    - /home/ubuntu/haitidata-dev-data/data:/geoserver_data/data
+    tty: true
+    links:
+    - postgres:postgres
+    labels:
+      io.rancher.container.start_once: 'true'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+  geoserver-balancer:
+    image: rancher/lb-service-haproxy:v0.7.9
+    ports:
+    - ${GEOSERVER_PORT}:${GEOSERVER_PORT}/tcp
+    expose:
+    - 8080:8080/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin
+      io.rancher.container.create_agent: 'true'
+  django:
+    image: kartoza/haitidata_django:latest
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_NAME: gis
+      DATABASE_PASSWORD: docker
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
+      DATABASE_USERNAME: docker
+      DJANGO_SETTINGS_MODULE: core.settings.prod_docker
+      GEOSERVER_BASE_URL: ${GEOSERVER_BASE_URL}/geoserver/
+      GEOSERVER_PUBLIC_LOCATION: ${DJANGO_URL}/api/geoserver/
+      LC_ALL: en_US.UTF-8
+      RABBITMQ_HOST: rabbitmq
+      SITEURL: ${SITE_URL}
+    stdin_open: true
+    volumes:
+    - django-static-data:/home/web/static:rw
+    - django-media-data:/home/web/media:rw
+    tty: true
+    links:
+    - postgres:postgres
+    - geoserver-balancer:geoserver-balancer
+    command:
+    - /entry-point.sh
+    labels:
+      io.rancher.container.pull_image: always
+  elasticsearch:
+    image: elasticsearch
+  nginx:
+    image: dimasciput/haitidata_nginx:latest
+    stdin_open: true
+    volumes:
+    - django-static-data:/home/web/static:ro
+    - django-media-data:/home/web/media:ro
+    - django-media-data:/home/web/uploaded:ro
+    - /home/ubuntu/haitidata/deployment/production/docker/nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+    tty: true
+    links:
+    - django:django
+    - geoserver-balancer:geoserver
+    ports:
+    - ${WEBSERVER_PORT}:8080/tcp
+    labels:
+      io.rancher.container.pull_image: always
+  rabbitmq:
+    image: rabbitmq
+  postgres:
+    image: dimasciput/haitidata_db
+    environment:
+      PASS: docker
+      POSTGRES_PASS: docker
+      POSTGRES_USER: docker
+      USERNAME: docker
+    volumes:
+    - /home/ubuntu/database-backups/backups:/dev_backups
+    - /backups:/backups
+  dbbackups:
+    image: kartoza/pg-backup:9.4
+    environment:
+      DUMPPREFIX: HAITIDATA
+      PGDATABASE: gis
+      PGHOST: db
+      PGPASSWORD: docker
+      PGPORT: '5432'
+      PGUSER: docker
+    stdin_open: true
+    volumes:
+    - /backups:/backups
+    tty: true
+    links:
+    - postgres:db
+    labels:
+      io.rancher.container.pull_image: always

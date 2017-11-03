@@ -1,0 +1,7 @@
+name: Haitidata
+description: Haitidata geonode app
+version: 1
+category: GIS
+maintainer: Kartoza (Pty) Ltd. - Dimas Ciputra, dimas@kartoza.com
+license: GPL v3
+projectURL: https://github.com/haitidata/haitidata
