@@ -10,6 +10,8 @@ services:
     volumes:
     - ${GEOSERVER_DATA}:/geoserver_data/data
     tty: true
+    ports:
+    - ${GEOSERVER_PORT}:8080
     links:
     - postgres:postgres
     labels:
